@@ -65,7 +65,7 @@ export default function GameCanvas() {
             ctx.translate(-camX, -camY)
 
             ctx.fillStyle = '#1f2937'
-            ctx.filllRect(0, 0, state.world.width, state.world.height)
+            ctx.fillRect(0, 0, state.world.width, state.world.height)
 
             state.objects.forEach(obj => {
                 ctx.fillStyle = obj.color
