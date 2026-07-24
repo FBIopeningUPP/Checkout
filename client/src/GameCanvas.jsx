@@ -45,7 +45,7 @@ export default function GameCanvas() {
                 let newY = Math.max(0, Math.min(y + dy, state.world.height - height))
 
                 let collidedX = false
-                for (let obj of state.objects) {
+                for (let obj of state.shelves) {
                     if (checkCollision({x: newX, y, width, height }, obj )) {
                         collidedX = true
                         if (dx > 0) x = obj.x - width
@@ -56,7 +56,7 @@ export default function GameCanvas() {
                 if (!collidedX) x = newX
 
                 let collidedY = false
-                for (let obj of state.objects) {
+                for (let obj of state.shelves) {
                     if (checkCollision({ x, y: newY, width, height }, obj)) {
                         collidedY = true
                         if (dy > 0) y = obj.y - height
@@ -94,7 +94,7 @@ export default function GameCanvas() {
                 ctx.fillRect(shelf.x, shelf.y, shelf.width, shelf.height)
 
                 const sCenter = { x: shelf.x + shelf.width/2, y: shelf.y + shelf.height/2 };
-                const dist = Math.hyport(pCenter.x - sCenter.x, pCenter.y - sCenter.y);
+                const dist = Math.hypot(pCenter.x - sCenter.x, pCenter.y - sCenter.y);
                 if (dist < minDist) {
                     minDist = dist;
                     nearest = shelf;
