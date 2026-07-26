@@ -35,7 +35,15 @@ export default function GameCanvas() {
             const state = useStore.getState()
             let { x, y, width, height, speed} = state.player
 
-            if (dx !== 0 || day !== 0) {
+            let dx = 0; let dy = 0;
+            if (!state.activeShelfId) {
+                if (keys.current['w'] || keys.current['arrowup']) dy -= speed * dt
+                if (keys.current['s'] || keys.current['arrowdown']) dy += speed * dt
+                if (keys.current['a'] || keys.current['arrowleft']) dx -= speed * dt
+                if (keys.current['d'] || keys.current['arrowright']) dx += speed * dt
+            }
+
+            if (dx !== 0 || dy !== 0) {
                 let newX = Math.max(0, Math.min(x + dx, state.world.width - width))
                 let newY = Math.max(0, Math.min(y + dy, state.world.height - height))
 
@@ -52,7 +60,7 @@ export default function GameCanvas() {
                 }
                 if (!collidedX) x = newX
 
-                letCollidedY = false
+                let collidedY = false
                 for (let obj of collidables) {
                     if (checkCollision({x, y: newY, width, height}, obj)) {
                         collidedY = true
