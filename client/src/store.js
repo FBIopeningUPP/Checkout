@@ -3,7 +3,7 @@ import { create } from 'zustand'
 export const useStore = create((set) => ({
     player: { x: 400, y: 300, width: 32, height: 32, speed: 250 },
     world: { width: 1600, height: 1200},
-    cash: 0,
+    cash: 50,
     checkout: { id: 'checkout', x: 800, y: 100, width: 128, height: 64, color: '#eab308'},
     products: [
         { id: 'p1', name: 'Apple', cost: 1, sell: 3 },
@@ -22,9 +22,31 @@ export const useStore = create((set) => ({
             s.id === shelfId && s.stock > 0 ? { ...s, stock: s.stock - 1 } : s
         )
     })),
-    assignProduct: (shelfId, productId) => set(state => ({
-        shelves: state.shelves.map(s => s.id === shelfId ? {...s, productId, stock: 10} : s),
-        activeShelfId: null
-    })),
+    assignProduct: (shelfId, productId) => set(state => {                                                                                                                                            
+        const product = state.producs.find(p => p.id === productId);
+        const cost = product.cost * 10;
+
+        if (state.cash >= cost) {
+            return {
+                cash: state.cash - cost,
+                shelves: state.shelves.map(s => s.id === shelfId ? {...s, productId, stock:10} : s),
+            }
+        }
+        return state;
+    }),
+    
+    restockShelf: (shelfId) => set(state => {
+        const shelf = state.shelves.find(s => s.id === shelfId);
+        const product = state.products.find(p => p.id === shelf.productId);
+        const cost = product.cost * 10;
+
+        if (state.cash >= cost) {
+            return {
+                cash: state.cash - cost,
+                shelves: state.shelves.map(s => s.id === shelfId ? {...s, stock: s.stock + 10} : s)
+            }
+        }
+        return state;
+    }),
     closeMenu: () => set({ activeShelfId: null })
 })) 
