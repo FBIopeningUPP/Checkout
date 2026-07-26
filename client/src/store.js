@@ -23,7 +23,7 @@ export const useStore = create((set) => ({
         )
     })),
     assignProduct: (shelfId, productId) => set(state => {                                                                                                                                            
-        const product = state.producs.find(p => p.id === productId);
+        const product = state.products.find(p => p.id === productId);
         const cost = product.cost * 10;
 
         if (state.cash >= cost) {
