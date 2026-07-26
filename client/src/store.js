@@ -9,7 +9,7 @@ export const useStore = create((set) => ({
     dayTimeLeft: 60,
     isDayActive: true,
     dailyRevenue: 0,
-    dailyExpense: 0,
+    dailyExpenses: 0,
 
     checkout: { id: 'checkout', x: 800, y: 100, width: 128, height: 64, color: '#eab308'},
     products: [
@@ -22,7 +22,7 @@ export const useStore = create((set) => ({
         { id: 3, x: 300, y: 600, width: 256, height: 64, color: '#4b5563', productId: null, stock: 0 }
     ],
 
-    serverCustomers: (count) => set(state => {
+    serveCustomers: (count) => set(state => {                                                                                                                                                          
         const earnings= count * 5;
         return {
             cash: state.cash + earnings,
@@ -42,8 +42,8 @@ export const useStore = create((set) => ({
 
         if (state.cash >= cost) {
             return {
-                cash: state.cash = cost,
-                dailyExpense: state.dailyExpense + cost,
+                cash: state.cash - cost,
+                dailyExpenses: state.dailyExpenses + cost,
                 shelves: state.shelves.map(s => s.id === shelfId ? { ...s, productId, stock: 10} : s),
                 activeShelfId: null
             }
@@ -53,13 +53,13 @@ export const useStore = create((set) => ({
 
     restockShelf: (shelfId) => set(state => {
         const shelf = state.shelves.find(s => s.id === shelfId);
-        const product = state.product.find(p => p.id === shelf.productId);
+        const product = state.products.find(p => p.id === shelf.productId);
         const cost = product.cost * 10;
 
         if (state.cash >= cost) {
             return {
                 cash: state.cash - cost,
-                dailyExpense: state.dailyExpense + cost,
+                dailyExpenses: state.dailyExpenses + cost,
                 shelves: state.shelves.map(s => s.id === shelfId ? {...s, stock: s.stock + 10} : s)
             }
         }
@@ -74,6 +74,6 @@ export const useStore = create((set) => ({
         dayTimeLeft: 60,
         isDayActive: true,
         dailyRevenue: 0,
-        dailyExpense: 0
+        dailyExpenses: 0
     }))
 }))
