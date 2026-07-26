@@ -1,6 +1,6 @@
 import { useRef, useEffect } from 'react'
 import { useStore } from './store'
-import { colors, playerSprite, customerSprite, appleSprite, breadSprite } from './sprites'                                                                                                                                                                                                                                                
+import { colors, playerSprite, customerSprite, appleSprite, breadSprite, shelfSprite, checkoutSprite } from './sprites'                                                                                                                                                                                                                                                                                                                         
 
 const checkCollision = (rect1, rect2) => {
     return (
@@ -134,21 +134,18 @@ export default function GameCanvas() {
             const pCenter = { x: x + width/2, y: y + height/2 };
 
             state.shelves.forEach(shelf => {
-                ctx.fillStyle = shelf.productId ? '#8b5a2b' : shelf.color
-                ctx.fillRect(shelf.x, shelf.y, shelf.width, shelf.height)
-
-                if (shelf.productId && shelf.stock > 0) {
-                    const sprite = shelf.productId === 'p1' ? appleSprite : breadSprite;
-                    const count = Math.min(Math.ceil(shelf.stock / 3), 3);
-
-                    for (let i = 0; i < count; i++) {
-                        if (shelf.width > shelf.height) {
-                            drawSprite(ctx, sprite, shelf.x + 16 + (i*32), shelf.y + 16, 32, 32);
-                        } else {
-                            drawSprite(ctx, sprite, shelf.x + 16, shelf.y + 16 + (i*32), 32, 32);
-                        }
+                for (let sx = 0; sx < shelf.width; sx += 64) {
+                    for (let sy = 0; sy < shelf.height; sy += 64) {
+                        drawSprite(ctx, shelfSprite, shelf.x + sx, shelf.y + sy, 64, 64);
                     }
                 }
+
+                if (!shelf.productId) {
+                    ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
+                    ctx.fillRect(shelf.x, shelf.y, shelf.width, shelf.height);
+                }
+
+                if (shelf.productId && shelf.stock > 0) 
 
                 const sCenter = { x: shelf.x + shelf.width/2, y: shelf.y + shelf.height/2};
                 const dist = Math.hypot(pCenter.x - sCenter.x, pCenter.y - sCenter.y);
@@ -158,8 +155,9 @@ export default function GameCanvas() {
                 }
             })
 
-            ctx.fillStyle = state.checkout.color;
+            ctx.fillStyle = '#78350f'
             ctx.fillRect(state.checkout.x, state.checkout.y, state.checkout.width, state.checkout.height);
+            drawSprite(ctx, checkoutSprite, state.checkout.x + 32, state.checkout.y, 64, 64);
 
             if (state.isDayActive && time > nextCustomerTime) {
                 const stockedShelves = state.shelves.filter(s => s.stock > 0);
