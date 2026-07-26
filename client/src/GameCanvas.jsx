@@ -1,5 +1,6 @@
 import { useRef, useEffect } from 'react'
 import { useStore } from './store'
+import { colors, playerSprite, customerSprite, appleSprite, breadSprite } from './sprites'                                                                                                                                                                                                                                                
 
 const checkCollision = (rect1, rect2) => {
     return (
@@ -10,9 +11,26 @@ const checkCollision = (rect1, rect2) => {
     )
 }
 
+const drawSprite = (ctx, sprite, x, y, width, height, flipX = false) => {                                                                                                                            
+    const pixelW = width / 16;
+    const pixelH = height / 16;
+    for (let i = 0; i < 256; i++) {
+        const colorIndex = sprite[i];
+        if (colorIndex !== 0) {
+            ctx.fillStyle = colors[colorIndex];
+            const col = i % 16;                                                                                                                                                                      
+            const row = Math.floor(i / 16);                                                                                                                                                          
+            const px = x + (flipX ? (15 - col) : col) * pixelW;                                                                                                                                      
+            const py = y + row * pixelH;                                                                                                                                                             
+            ctx.fillRect(px, py, pixelW, pixelH);                                                                                                                                                    
+        }                                                                                                                                                                                            
+    }                                                                                                                                                                                                
+}   
+
 export default function GameCanvas() {
     const canvasRef = useRef(null)
     const keys = useRef({})
+    const pFacingLeft = useRef(false);
 
     useEffect(() => {
         const canvas = canvasRef.current
@@ -116,10 +134,23 @@ export default function GameCanvas() {
             const pCenter = { x: x + width/2, y: y + height/2 };
 
             state.shelves.forEach(shelf => {
-                ctx.fillStyle = shelf.productId ? '#10b981' : shelf.color
+                ctx.fillStyle = shelf.productId ? '#8b5a2b' : shelf.color
                 ctx.fillRect(shelf.x, shelf.y, shelf.width, shelf.height)
 
-                const sCenter = { x: shelf.x + shelf.width/2, y: shelf.y + shelf.height/2 };
+                if (shelf.productId && shelf.stock > 0) {
+                    const sprite = shelf.productId === 'p1' ? appleSprite : breadSprite;
+                    const count = Math.min(Math.cell(shelf.stock / 3), 3);
+
+                    for (let i = 0; i < count; i++) {
+                        if (shelf.width > shelf.height) {
+                            drawSprite(ctx, sprite, shelf.x + 16 + (i*32), shelf.y + 16, 32, 32);
+                        } else {
+                            drawSprite(ctx, sprite, shelf.x + 16, shelf.y + 16 + (i*32), 32, 32);
+                        }
+                    }
+                }
+
+                const sCenter = { x: shelf.x + shelf.width/2, y: shelf.y + shelf.height/2};
                 const dist = Math.hypot(pCenter.x - sCenter.x, pCenter.y - sCenter.y);
                 if (dist < minDist) {
                     minDist = dist;
@@ -190,18 +221,17 @@ export default function GameCanvas() {
                     for (let obj of collidables) {
                         if (c.state === 'TO_SHELF' && obj.id === c.targetId) continue;
                         if (c.state === 'TO_CHECKOUT' && obj.id === 'checkout') continue;
-
+  
                         if (checkCollision({x: c.x - 16, y: newY - 16, width: cSize, height: cSize}, obj)) {
-                            collidedX = true; break;
+                            collidedY = true; break;
                         }
                     }
                     if (!collidedY) c.y = newY;
                 }
 
-                ctx.fillStyle = '#f43f5e'
-                ctx.beginPath();
-                ctx.arc(c.x, c.y, 16, 0, Math.PI * 2);
-                ctx.fill();
+                const flipX = dx < 0;
+                const bob = (moveX !== 0 || moveY !== 0) ? Math.sin(time * 20) * 4 : 0
+                drawSprite(ctx, customerSprite, c.x - 16, c.y - 16 + bob, 32, 32, flipX);                                                                                                            
 
                 if (c.state === 'WAITING') {
                     ctx.fillStyle = '#facc15';
@@ -209,8 +239,11 @@ export default function GameCanvas() {
                 }
             })
 
-            ctx.fillStyle = '#3b92f6'
-            ctx.fillRect(x, y, width, height)
+            if (dx < 0) pFacingLeft.current = true;
+            else if (dx > 0) pFacingLeft.current = false;
+
+            const pBob = (dx !== 0 || dy !== 0) ? Math.sin(time * 20) * 4 : 0;
+            drawSprite(ctx, playerSprite, x, y, width, height, pFacingLeft.current);
 
             const checkoutCenter = { x: state.checkout.x + state.checkout.width/2, y: state.checkout.y + state.checkout.height/2 };
             const distToCheckout = Math.hypot(pCenter.x - checkoutCenter.x, pCenter.y - checkoutCenter.y);
