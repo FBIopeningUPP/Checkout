@@ -76,9 +76,61 @@ function ShelfMenu() {
 }
 function HUD() {
   const cash = useStore(s => s.cash)
+  const day = useStore(s => s.day)
+  const time = useStore(s => s.dayTimeLeft)
+  const isDayActive = useStore(s => s.isDayActive)
+  
   return (
-    <div className="absolute top-4 left-4 z-10 text-5xl text-green-400 drop-shadow-[4px_4px_0_rgba(0,0,0,1)] font-bold">
-      ${cash}
+    <div className="absolute top-4 left-4 z-10 flex gap-8 text-5xl text-white drop-shadow-[4px_4px_0_rgba(0,0,0,1)] font-bold">
+      <div className="text-green-400">${cash}</div>
+      <div className="text-yellow-400">Day {day}</div>                                                                                                                                               
+      <div className={time < 10 && isDayActive ? 'text-red-500 animate-pulse' : 'text-white'}>                                                                                                       
+        {isDayActive ? Math.ceil(time) + 's' : 'CLOSED'}                                                                                                                                             
+      </div>
+    </div>
+  )
+}
+
+function DaySummary() {
+  const isDayActive = useStore(s => s.isDayActive)
+  const day = useStore(s => s.day)
+  const rev = useStore(s => s.dailyRevenue)
+  const exp = useStore(s => s.dailyExpenses)
+  const startNextDay = useStore(s => s.startNextDay)
+
+  if(isDayActive) return null;
+  const profit = rev - exp;
+  return (                                                                                                                                                                                           
+    <div className="absolute inset-0 bg-black/80 flex items-center justify-center z-20 uppercase">
+      <div className="bg-gray-900 p-8 border-4 border-gray-400 shadow-[8px_8px_0_0_rgba(0,0,0,1)] w-[500px] text-white text-center">
+        <h1 className="text-5xl font-bold mb-8 text-yellow-400">Day {day} Complete!</h1>
+
+        <div className="text-3xl flex justify-between mb-4">
+          <span>Revenue:</span>
+          <span className="text-green-400">+${rev}</span>                                                                                                                                            
+        </div>                                                                                                                                                                                       
+                                                                                                                                                                                                         
+        <div className="text-3xl flex justify-between mb-4">                                                                                                                                         
+          <span>Expenses:</span>                                                                                                                                                                     
+          <span className="text-red-400">-${exp}</span>                                                                                                                                              
+        </div>                                                                                                                                                                                       
+                                                                                                                                                                                                         
+        <div className="w-full h-1 bg-gray-600 my-4"></div>                                                                                                                                          
+                                                                                                                                                                                                         
+        <div className="text-4xl flex justify-between mb-8 font-bold">                                                                                                                               
+          <span>Profit:</span>
+          <span className={profit >= 0 ? "text-green-400" : "text-red-500"}>
+            {profit >= 0 ? '+' : ''}${profit}
+          </span>                                                                                                                                                                                    
+        </div>                                                                                                                                                                                       
+                                                                                                                                                                                                         
+        <button                                                                                                                                                                                      
+          onClick={startNextDay}                                                                                                                                                                     
+          className="bg-blue-600 hover:bg-blue-500 w-full py-4 border-2 border-blue-400 shadow-[4px_4px_0_0_rgba(0,0,0,1)] font-bold text-3xl cursor-pointer active:translate-x-1 active:translate-y-1 active:shadow-none transition-all"                                                                                                                                                                   
+        >                                                                                                                                                                                            
+          Start Next Day                                                                                                                                                                             
+        </button>                                                                                                                                                                                    
+      </div>
     </div>
   )
 }
@@ -88,6 +140,7 @@ function App() {
       <GameCanvas />
       <HUD />
       <ShelfMenu />
+      <DaySummary />
     </div>
   )
 }

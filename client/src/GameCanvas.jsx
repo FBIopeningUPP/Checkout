@@ -43,36 +43,16 @@ export default function GameCanvas() {
                 if (keys.current['d'] || keys.current['arrowright']) dx += speed * dt
             }
 
-            if (dx !== 0 || dy !== 0) {
-                let newX = Math.max(0, Math.min(x + dx, state.world.width - width))
-                let newY = Math.max(0, Math.min(y + dy, state.world.height - height))
-
-                const collidables = [...state.shelves, state.checkout];
-
-                let collidedX = false
-                for (let obj of collidables) {
-                    if (checkCollision({x: newX, y, width, height }, obj )) {
-                        collidedX = true
-                        if (dx > 0) x = obj.x - width
-                        else if (dx < 0) x = obj.x + obj.width
-                        break
-                    }
+            if (state.isDayActive) {                                                                                                                                                                 
+                const newTime = state.dayTimeLeft - dt;
+                if (newTime <= 0) {
+                    useStore.getState().endDay();
+                } else {                                                                                                                                                                             
+                    useStore.setState({ dayTimeLeft: newTime });                                                                                                                                     
                 }
-                if (!collidedX) x = newX
-
-                let collidedY = false
-                for (let obj of collidables) {
-                    if (checkCollision({ x, y: newY, width, height }, obj)) {
-                        collidedY = true
-                        if (dy > 0) y = obj.y - height
-                        else if (dy < 0) y = obj.y + obj.height
-                        break
-                    }
-                }
-                if (!collidedY) y = newY
-
-                useStore.setState({ player: { ...state.player, x, y } })
-            }
+            } else {
+                customers.length = 0; 
+            }                                                                                                                                                                                        
 
             if (canvas.width !== window.innerWidth || canvas.height !== window.innerHeight) {
                 canvas.width = window.innerWidth
@@ -119,7 +99,7 @@ export default function GameCanvas() {
             ctx.fillStyle = state.checkout.color;
             ctx.fillRect(state.checkout.x, state.checkout.y, state.checkout.width, state.checkout.height);
 
-            if(time > nextCustomerTime) {
+            if (state.isDayActive && time > nextCustomerTime) {
                 const stockedShelves = state.shelves.filter(s => s.stock > 0);
                 if (stockedShelves.length > 0) {
                     const target = stockedShelves[Math.floor(Math.random() * stockedShelves.length)];
