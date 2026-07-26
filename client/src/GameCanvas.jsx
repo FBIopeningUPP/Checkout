@@ -139,7 +139,7 @@ export default function GameCanvas() {
 
                 if (shelf.productId && shelf.stock > 0) {
                     const sprite = shelf.productId === 'p1' ? appleSprite : breadSprite;
-                    const count = Math.min(Math.cell(shelf.stock / 3), 3);
+                    const count = Math.min(Math.ceil(shelf.stock / 3), 3);
 
                     for (let i = 0; i < count; i++) {
                         if (shelf.width > shelf.height) {
