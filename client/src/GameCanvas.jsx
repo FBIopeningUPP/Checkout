@@ -35,14 +35,37 @@ export default function GameCanvas() {
             const state = useStore.getState()
             let { x, y, width, height, speed} = state.player
 
-            let dx = 0; let dy = 0;
-            if (!state.activeShelfId) {
-                if (keys.current['w'] || keys.current['arrowup']) dy -= speed * dt
-                if (keys.current['s'] || keys.current['arrowdown']) dy += speed * dt
-                if (keys.current['a'] || keys.current['arrowleft']) dx -= speed * dt
-                if (keys.current['d'] || keys.current['arrowright']) dx += speed * dt
-            }
+            if (dx !== 0 || day !== 0) {
+                let newX = Math.max(0, Math.min(x + dx, state.world.width - width))
+                let newY = Math.max(0, Math.min(y + dy, state.world.height - height))
 
+                const collidables = [...state.shelves, state.checkout];
+
+                let collidedX = false
+                for (let obj of collidables) {
+                    if(checkCollision({x: newX, y, width, height}, obj)) {
+                        collidedX = true
+                        if (dx > 0) x = obj.x - width
+                        else if (dx < 0) x = obj.x + obj.width
+                        break
+                    }
+                }
+                if (!collidedX) x = newX
+
+                letCollidedY = false
+                for (let obj of collidables) {
+                    if (checkCollision({x, y: newY, width, height}, obj)) {
+                        collidedY = true
+                        if (dy > 0) y = obj.y - height
+                        else if (dy < 0) y = obj.y + obj.height
+                        break
+                    }
+                }
+                if (!collidedY) y = newY
+
+                useStore.setState({ player: {...state.player, x, y}})
+            }
+            
             if (state.isDayActive) {                                                                                                                                                                 
                 const newTime = state.dayTimeLeft - dt;
                 if (newTime <= 0) {
