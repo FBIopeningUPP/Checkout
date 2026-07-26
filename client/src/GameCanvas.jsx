@@ -73,7 +73,7 @@ export default function GameCanvas() {
 
                 useStore.setState({ player: {...state.player, x, y}})
             }
-            
+
             if (state.isDayActive) {                                                                                                                                                                 
                 const newTime = state.dayTimeLeft - dt;
                 if (newTime <= 0) {
@@ -147,21 +147,55 @@ export default function GameCanvas() {
                 const dy = c.targetY - c.y;
                 const dist = Math.hypot(dx, dy);
 
+                let moveX = 0;
+                let moveY = 0;
+
                 if (c.state === 'TO_SHELF') {
                     if (dist < 10) {
                         c.state = 'TO_CHECKOUT';
                         c.targetX = state.checkout.x + state.checkout.width/2;
                         c.targetY = state.checkout.y + state.checkout.height/2;
+                        useStore.getState().takeStock(c.targetId);
                     } else {
-                        c.x += (dx / dist) * c.speed * dt;
-                        c.y += (dy / dist) * c.speed * dt;
+                        moveX = (dx / dist) * c.speed * dt;
+                        moveY = (dy / dist) * c.speed * dt;
                     }
                 } else if (c.state === 'TO_CHECKOUT') {
-                    if (dist < 50) c.state = 'WAITING';
-                    else {
-                        c.x += (dx / dist) * c.speed * dt;
-                        c.y += (dy / dist) * c.speed * dt;
+                    if (dist < 50) {
+                        c.state = 'WAITING';
+                    } else {
+                        moveX = (dx / dist) * c.speed * dt;
+                        moveY = (dy / dist) * c.speed * dt;
                     }
+                }
+
+                if (moveX !== 0 || moveY !== 0) {
+                    const cSize = 32;
+                    let newX = c.x + moveX;
+                    let newY = c.y + moveY;
+                    const collidables = [...state.shelves, state.checkout];
+
+                    let collidedX = false;
+                    for (let obj of collidables) {
+                        if (c.state === 'TO_SHELF' && obj.id === c.targetId) continue;
+                        if (c.state === 'TO_CHECKOUT' && obj.id === 'checkout') continue;
+
+                        if (checkCollision({x: newX - 16, y: c.y - 16, width: cSize, height: cSize}, obj)) {
+                            collidedX = true; break;
+                        }
+                    }
+                    if (!collidedX) c.x = newX;
+
+                    let collidedY = false;
+                    for (let obj of collidables) {
+                        if (c.state === 'TO_SHELF' && obj.id === c.targetId) continue;
+                        if (c.state === 'TO_CHECKOUT' && obj.id === 'checkout') continue;
+
+                        if (checkCollision({x: c.x - 16, y: newY - 16, width: cSize, height: cSize}, obj)) {
+                            collidedX = true; break;
+                        }
+                    }
+                    if (!collidedY) c.y = newY;
                 }
 
                 ctx.fillStyle = '#f43f5e'
@@ -173,7 +207,7 @@ export default function GameCanvas() {
                     ctx.fillStyle = '#facc15';
                     ctx.fillRect(c.x - 4, c.y - 24, 8, 8);
                 }
-            });
+            })
 
             ctx.fillStyle = '#3b92f6'
             ctx.fillRect(x, y, width, height)
