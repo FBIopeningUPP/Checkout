@@ -248,7 +248,8 @@ export default function GameCanvas() {
 
                     let collidedX = false;
                     for (let obj of collidables) {
-                        if (c.state === 'TO_SHELF' && obj.id === c.targetId) continue;
+                        // ponytail: just always ignore our assigned shelf so we don't get stuck inside it when leaving
+                        if (obj.id === c.targetId) continue;
                         if (c.state === 'TO_CHECKOUT' && obj.id === 'checkout') continue;
 
                         if (checkCollision({x: newX - 16, y: c.y - 16, width: cSize, height: cSize}, obj)) {
@@ -259,7 +260,7 @@ export default function GameCanvas() {
 
                     let collidedY = false;
                     for (let obj of collidables) {
-                        if (c.state === 'TO_SHELF' && obj.id === c.targetId) continue;
+                        if (obj.id === c.targetId) continue;
                         if (c.state === 'TO_CHECKOUT' && obj.id === 'checkout') continue;
   
                         if (checkCollision({x: c.x - 16, y: newY - 16, width: cSize, height: cSize}, obj)) {
@@ -327,7 +328,7 @@ export default function GameCanvas() {
                     if (nearest.id === 'checkout') {
                         const waiting = customers.filter(c => c.state === 'WAITING');
                         if (waiting.length > 0) {
-                            useStore.getState().serverCustomers(waiting.length);
+                            useStore.getState().serveCustomers(waiting.length);
                             waiting.forEach(c => c.state = 'LEAVING');
                         }
                     } else {
