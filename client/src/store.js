@@ -20,9 +20,9 @@ export const useStore = create((set) => ({
     ],
 
     walls: [
-        { id: 'w1', x: 0, y: 9, width: 1600, height: 32, color: '#374151'},
-        { id: 'w2', x: 0, y: 9, width: 32, height: 1200, color: '#374151'},
-        { id: 'w3', x: 1568, y: 9, width: 32, height: 1200, color: '#374151'},
+        { id: 'w1', x: 0, y: 0, width: 1600, height: 32, color: '#374151'},
+        { id: 'w2', x: 0, y: 0, width: 32, height: 1200, color: '#374151'},
+        { id: 'w3', x: 1568, y: 0, width: 32, height: 1200, color: '#374151'},
         { id: 'w4', x: 0, y: 1168, width: 700, height: 32, color: '#374151'},
         { id: 'w5', x: 900, y: 1168, width: 700, height: 32, color: '#374151'},
     ],
@@ -47,9 +47,9 @@ export const useStore = create((set) => ({
     }),
 
     placeShelf: (x, y) => set(state => {
-        const isOccupied = state.shelves.some(s =>
-            x < s.x + s.width && x + 128 > s.x &&
-            y < s.y + s.height && y + 64 > s.y
+        const isOccupied = [...state.shelves, state.checkout, ...state.walls].some(s =>
+            x < s.x + (s.width || 0) && x + 128 > s.x &&
+            y < s.y + (s.height || 0) && y + 64 > s.y
         );
         if (isOccupied) {
             playError();

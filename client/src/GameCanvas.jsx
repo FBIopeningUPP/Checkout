@@ -137,7 +137,7 @@ export default function GameCanvas() {
             ctx.fillStyle = '#1e3a8a';
             ctx.fillRect(700, 1168, 200, 32);
             ctx.fillStyle = 'white';
-            ctx.font = '24px "VT322", monospace';
+            ctx.font = '24px "VT323", monospace';
             ctx.fillText("ENTRANCE", 760, 1192);
 
             let nearest = null; 
@@ -187,7 +187,7 @@ export default function GameCanvas() {
                 if (stockedShelves.length > 0) {
                     const target = stockedShelves[Math.floor(Math.random() * stockedShelves.length)];
                     customers.push({
-                        x: 800, y: 1250, speed: 150, state: 'ENETERING',
+                        x: 800, y: 1250, speed: 150, state: 'ENTERING',
                         targetId: target.id, targetX: target.x + target.width/2, targetY: target.y + target.height/2
                     });
                 }
@@ -208,10 +208,16 @@ export default function GameCanvas() {
                     else moveY = -c.speed * dt;
                 } else if (c.state === 'TO_SHELF') {
                     if (dist < 10) {
-                        c.state = 'TO_CHECKOUT';
-                        c.targetX = state.checkout.x + state.checkout.width/2;
-                        c.targetY = state.checkout.y + state.checkout.height/2;
-                        useStore.getState().takeStock(c.targetId);
+                        const targetShelf = state.shelves.find(s => s.id === c.targetId);
+                        if (targetShelf && targetShelf.stock > 0) {
+                            c.state = 'TO_CHECKOUT';
+                            c.targetX = state.checkout.x + state.checkout.width/2;
+                            c.targetY = state.checkout.y + state.checkout.height/2;
+                            useStore.getState().takeStock(c.targetId);
+                        } else {
+                            // Angry! Shelf is empty! Leave!
+                            c.state = 'LEAVING';
+                        }
                     } else {
                         moveX = (dx / dist) * c.speed * dt;
                         moveY = (dy / dist) * c.speed * dt;
