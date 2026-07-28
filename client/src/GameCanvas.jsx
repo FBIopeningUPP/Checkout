@@ -265,12 +265,34 @@ export default function GameCanvas() {
                 interactText = '[E] Serve Customers';
             }
 
-            if (nearest && !state.activeShelfId) {
+            if (state.buildMode) {
+                const snapX = Math.floor((x + 16) / 64) * 64;
+                const snapY = Math.floor((y + 16) / 64) * 64;
+
+                ctx.globalAlpha = 0.5;
+                for (let sx = 0; sx < 128; sx += 64) {
+                    for (let sy = 0; sy < 64; sy += 64) {
+                        drawSprite(ctx, shelfSprite, snapX + sx, snapY + sy, 64, 64);
+                    }
+                }
+                ctx.globalAlpha = 1.0;
+
+                ctx.fillStyle = 'white'
+                ctx.font = '24px "VT323", monospace'
+                ctx.fillText('[E] Place Shelf', snapX, snapY - 10)
+
+                if (keys.current['e']) {
+                    keys.current['e'] = false;
+                    useStore.getState().placeShelf(snapX, snapY);
+                }
+            }
+
+            else if (nearest && !state.activeShelfId) {
                 ctx.fillStyle = 'white'
                 ctx.font = '24px "VT323", monospace'
                 ctx.fillText(interactText, nearest.x, nearest.y - 10)
 
-                if (keys.current['e']) {
+                if (keys.current['e']) {                                                                                                                                                             
                     keys.current['e'] = false
                     if (nearest.id === 'checkout') {
                         const waiting = customers.filter(c => c.state === 'WAITING');

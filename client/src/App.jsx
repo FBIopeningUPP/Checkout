@@ -74,20 +74,45 @@ function ShelfMenu() {
     </div>
   )
 }
+
 function HUD() {
   const cash = useStore(s => s.cash)
   const day = useStore(s => s.day)
   const time = useStore(s => s.dayTimeLeft)
   const isDayActive = useStore(s => s.isDayActive)
+  const buildMode = useStore(s => s.buildMode)
+  const startBuildMode = useStore(s => s.startBuildMode)
+  const cancelBuildMode = useStore(s => s.cancelBuildMode)
   
   return (
-    <div className="absolute top-4 left-4 z-10 flex gap-8 text-5xl text-white drop-shadow-[4px_4px_0_rgba(0,0,0,1)] font-bold">
-      <div className="text-green-400">${cash}</div>
-      <div className="text-yellow-400">Day {day}</div>                                                                                                                                               
-      <div className={time < 10 && isDayActive ? 'text-red-500 animate-pulse' : 'text-white'}>                                                                                                       
-        {isDayActive ? Math.ceil(time) + 's' : 'CLOSED'}                                                                                                                                             
-      </div>
-    </div>
+    <>                                                                                                                                                                                               
+          <div className="absolute top-4 left-4 z-10 flex gap-8 text-5xl text-white drop-shadow-[4px_4px_0_rgba(0,0,0,1)] font-bold">
+            <div className="text-green-400">${cash}</div>
+            <div className="text-yellow-400">Day {day}</div>
+            <div className={time < 10 && isDayActive ? 'text-red-500 animate-pulse' : 'text-white'}>
+              {isDayActive ? Math.ceil(time) + 's' : 'CLOSED'}
+            </div>
+          </div>
+                                                                                                                                                                                                         
+          <div className="absolute top-4 right-4 z-10">                                                                                                                                                  
+            {!buildMode ? (
+              <button                                                                                                                                                                                    
+                onClick={startBuildMode}
+                disabled={cash < 100}                                                                                                                                                                    
+                className="bg-blue-600 hover:bg-blue-500 disabled:bg-gray-700 disabled:border-gray-600 disabled:text-gray-500 text-white p-4 border-4 border-blue-400 shadow-[4px_4px_0_0_rgba(0,0,0,1)] font-bold text-2xl cursor-pointer active:translate-x-1 active:translate-y-1 active:shadow-none transition-all uppercase"
+              >                                                                                                                                                                                          
+                Buy Shelf ($100)                                                                                                                                                                         
+              </button>
+            ) : (
+              <button
+                onClick={cancelBuildMode}                                                                                                                                                                
+                className="bg-red-600 hover:bg-red-500 text-white p-4 border-4 border-red-400 shadow-[4px_4px_0_0_rgba(0,0,0,1)] font-bold text-2xl cursor-pointer active:translate-x-1 active:translate-y-1 active:shadow-none transition-all uppercase animate-pulse"
+              >                                                                                                                                                                                          
+                Cancel Placement                                                                                                                                                                         
+              </button>                                                                                                                                                                                  
+            )}                                                                                                                                                                                           
+          </div>                                                                                                                                                                                         
+        </>                                                                                                                                                                                              
   )
 }
 

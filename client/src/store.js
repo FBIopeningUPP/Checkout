@@ -5,7 +5,8 @@ export const useStore = create((set) => ({
     player: { x: 400, y: 300, width: 32, height: 32, speed: 250},
     world: { width: 1600, height: 1200},
 
-    cash: 50,
+    cash: 500,
+    buildMode: false,
     day: 1,
     dayTimeLeft: 60,
     isDayActive: true,
@@ -22,6 +23,37 @@ export const useStore = create((set) => ({
         { id: 2, x: 600, y: 400, width: 64, height: 128, color: '#4b5563', productId: null, stock: 0 },                                                                                              
         { id: 3, x: 300, y: 600, width: 256, height: 64, color: '#4b5563', productId: null, stock: 0 }
     ],
+
+    startBuildMode: () => set(state => {
+        if (state.cash >= 100) {
+            playPop();
+            return { cash: state.cash - 100, buildMode: true, activeShelfId: null}
+        }
+        playError();
+        return state;
+    }),
+
+    cancelBuildMode: () => set(state => {
+        playPop();
+        return { cash: state.cash + 100, buildMode: false}
+    }),
+
+    placeShelf: (x, y) => set(state => {
+        const isOccupied = state.shelves.some(s =>
+            x < s.x + s.width && x + 128 > s.x &&
+            y < s.y + s.height && y + 64 > s.y
+        );
+        if (isOccupied) {
+            playError();
+            return state;
+        }
+        playCoin();
+        return {
+            shelves: [...state.shelves, { id: Date.now(), x, y, width: 128, height: 64, color: '#4b5563', productId: null, stock: 0}],
+            buildMode: false,
+            dailyExpenses: state.dailyExpenses + 100
+        }
+    }),
 
     serveCustomers: (count) => set(state => {                                                                                                                                                          
         const earnings= count * 5;
