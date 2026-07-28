@@ -65,7 +65,7 @@ export default function GameCanvas() {
                 let newX = Math.max(0, Math.min(x + dx, state.world.width - width))
                 let newY = Math.max(0, Math.min(y + dy, state.world.height - height))
 
-                const collidables = [...state.shelves, state.checkout];
+                const collidables = [...state.shelves, state.checkout, ...state.walls];
 
                 let collidedX = false
                 for (let obj of collidables) {
@@ -129,6 +129,17 @@ export default function GameCanvas() {
                 }
             }
 
+            state.walls.forEach(w => {
+                ctx.fillStyle = w.color;
+                ctx.fillRect(w.x, w.y, w.width, w.height);
+            });
+
+            ctx.fillStyle = '#1e3a8a';
+            ctx.fillRect(700, 1168, 200, 32);
+            ctx.fillStyle = 'white';
+            ctx.font = '24px "VT322", monospace';
+            ctx.fillText("ENTRANCE", 760, 1192);
+
             let nearest = null; 
             let minDist = 200;
             const pCenter = { x: x + width/2, y: y + height/2 };
@@ -176,12 +187,12 @@ export default function GameCanvas() {
                 if (stockedShelves.length > 0) {
                     const target = stockedShelves[Math.floor(Math.random() * stockedShelves.length)];
                     customers.push({
-                        x: 800, y: 1200, speed: 150, state: 'TO_SHELF',
+                        x: 800, y: 1250, speed: 150, state: 'ENETERING',
                         targetId: target.id, targetX: target.x + target.width/2, targetY: target.y + target.height/2
                     });
                 }
                 nextCustomerTime = time + 2000 + Math.random() * 2000;
-            }
+            } 
 
             customers.forEach( c => {
                 const dx = c.targetX - c.x;
@@ -191,7 +202,11 @@ export default function GameCanvas() {
                 let moveX = 0;
                 let moveY = 0;
 
-                if (c.state === 'TO_SHELF') {
+                if (c.state === 'ENTERING') {
+                    const dyEnter = 1100 - c.y;
+                    if (Math.abs(dyEnter) < 10) c.state = 'TO_SHELF';
+                    else moveY = -c.speed * dt;
+                } else if (c.state === 'TO_SHELF') {
                     if (dist < 10) {
                         c.state = 'TO_CHECKOUT';
                         c.targetX = state.checkout.x + state.checkout.width/2;
@@ -207,6 +222,15 @@ export default function GameCanvas() {
                     } else {
                         moveX = (dx / dist) * c.speed * dt;
                         moveY = (dy / dist) * c.speed * dt;
+                    }
+                } else if (c.state === 'LEAVING') {
+                    const dyOut = 1300 - c.y;
+                    const dxOut = 800 - c.x;
+                    const distOut = Math.hypot(dxOut, dyOut);
+                    if (distOut < 10) c.state = 'DESPAWN';
+                    else {
+                        moveX = (dxOut / distOut) * c.speed * dt;
+                        moveY = (dyOut / distOut) * c.speed * dt;
                     }
                 }
 
@@ -297,13 +321,11 @@ export default function GameCanvas() {
                     if (nearest.id === 'checkout') {
                         const waiting = customers.filter(c => c.state === 'WAITING');
                         if (waiting.length > 0) {
-                            useStore.getState().serveCustomers(waiting.length);
-                            const remaining = customers.filter(c => c.state !== 'WAITING');
-                            customers.length = 0;
-                            customers.push(...remaining);
+                            useStore.getState().serverCustomers(waiting.length);
+                            waiting.forEach(c => c.state = 'LEAVING');
                         }
                     } else {
-                        useStore.setState({ activeShelfId: nearest.id })
+                        useStore.setState({activeShelfId: nearest.id})
                     }
                 }
             }

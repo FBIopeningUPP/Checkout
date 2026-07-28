@@ -18,6 +18,14 @@ export const useStore = create((set) => ({
         { id: 'p1', name: 'Apple', cost: 1, sell: 3 },
         { id: 'p2', name: 'Bread', cost: 2, sell: 5 }
     ],
+
+    walls: [
+        { id: 'w1', x: 0, y: 9, width: 1600, height: 32, color: '#374151'},
+        { id: 'w2', x: 0, y: 9, width: 32, height: 1200, color: '#374151'},
+        { id: 'w3', x: 1568, y: 9, width: 32, height: 1200, color: '#374151'},
+        { id: 'w4', x: 0, y: 1168, width: 700, height: 32, color: '#374151'},
+        { id: 'w5', x: 900, y: 1168, width: 700, height: 32, color: '#374151'},
+    ],
     shelves: [
         { id: 1, x: 300, y: 200, width: 128, height: 64, color: '#4b5563', productId: null, stock: 0 },                                                                                              
         { id: 2, x: 600, y: 400, width: 64, height: 128, color: '#4b5563', productId: null, stock: 0 },                                                                                              
