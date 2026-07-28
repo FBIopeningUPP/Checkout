@@ -130,7 +130,7 @@ export default function GameCanvas() {
             }
 
             let nearest = null; 
-            let minDist = 100;
+            let minDist = 200;
             const pCenter = { x: x + width/2, y: y + height/2 };
 
             state.shelves.forEach(shelf => {
@@ -266,8 +266,8 @@ export default function GameCanvas() {
             }
 
             if (state.buildMode) {
-                const snapX = Math.floor((x + 16) / 64) * 64;
-                const snapY = Math.floor((y + 16) / 64) * 64;
+                const snapX = Math.floor((x + 16) / 32) * 32;
+                const snapY = Math.floor((y + 16) / 32) * 32;
 
                 ctx.globalAlpha = 0.5;
                 for (let sx = 0; sx < 128; sx += 64) {
