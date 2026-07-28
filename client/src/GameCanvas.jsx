@@ -145,9 +145,21 @@ export default function GameCanvas() {
                     ctx.fillRect(shelf.x, shelf.y, shelf.width, shelf.height);
                 }
 
-                if (shelf.productId && shelf.stock > 0) 
+                if (shelf.productId && shelf.stock > 0) {
+                    const sprite = shelf.productId === 'p1' ? appleSprite : breadSprite;
+                    const count = Math.min(Math.ceil(shelf.stock / 3), 3);
+
+                    for (let i = 0; i < count; i++) {
+                        if (shelf.width > shelf.height) {
+                            drawSprite(ctx, sprite, shelf.x + 16 +  (i*32), shelf.y + 16, 32,32);
+                        } else {
+                            drawSprite(ctx, sprite, shelf.x + 16, shelf.y + 16 + (i*32), 32, 32);
+                        }
+                    }
+                }
 
                 const sCenter = { x: shelf.x + shelf.width/2, y: shelf.y + shelf.height/2};
+                
                 const dist = Math.hypot(pCenter.x - sCenter.x, pCenter.y - sCenter.y);
                 if (dist < minDist) {
                     minDist = dist;

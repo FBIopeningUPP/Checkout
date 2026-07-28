@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { playCoin, playError, playPop, playBell } from './audio'
 
 export const useStore = create((set) => ({
     player: { x: 400, y: 300, width: 32, height: 32, speed: 250},
@@ -24,6 +25,7 @@ export const useStore = create((set) => ({
 
     serveCustomers: (count) => set(state => {                                                                                                                                                          
         const earnings= count * 5;
+        playCoin();
         return {
             cash: state.cash + earnings,
             dailyRevenue: state.dailyRevenue + earnings
@@ -41,6 +43,7 @@ export const useStore = create((set) => ({
         const cost = product.cost * 10;
 
         if (state.cash >= cost) {
+            playPop();
             return {
                 cash: state.cash - cost,
                 dailyExpenses: state.dailyExpenses + cost,
@@ -48,6 +51,7 @@ export const useStore = create((set) => ({
                 activeShelfId: null
             }
         }
+        playError();
         return state;
     }),
 
@@ -57,18 +61,23 @@ export const useStore = create((set) => ({
         const cost = product.cost * 10;
 
         if (state.cash >= cost) {
+            playPop();
             return {
                 cash: state.cash - cost,
                 dailyExpenses: state.dailyExpenses + cost,
                 shelves: state.shelves.map(s => s.id === shelfId ? {...s, stock: s.stock + 10} : s)
             }
         }
+        playError();
         return state;
     }),
 
     closeMenu: () => set({activeShelfId: null}),
 
-    endDay: () => set({ isDayActive: false}),
+    endDay: () => set(state => {
+        playBell();
+        return { isDayActive: false };
+    }),
     startNextDay: () => set(state=> ({
         day: state.day + 1,
         dayTimeLeft: 60,
