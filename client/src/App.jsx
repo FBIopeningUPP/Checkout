@@ -96,13 +96,28 @@ function HUD() {
                                                                                                                                                                                                          
           <div className="absolute top-4 right-4 z-10">                                                                                                                                                  
             {!buildMode ? (
-              <button                                                                                                                                                                                    
-                onClick={startBuildMode}
-                disabled={cash < 100}                                                                                                                                                                    
-                className="bg-blue-600 hover:bg-blue-500 disabled:bg-gray-700 disabled:border-gray-600 disabled:text-gray-500 text-white p-4 border-4 border-blue-400 shadow-[4px_4px_0_0_rgba(0,0,0,1)] font-bold text-2xl cursor-pointer active:translate-x-1 active:translate-y-1 active:shadow-none transition-all uppercase"
-              >                                                                                                                                                                                          
-                Buy Shelf ($100)                                                                                                                                                                         
-              </button>
+              <div className="flex gap-4">
+                  <button                                                                                                                                                                                    
+                    onClick={startBuildMode}
+                    disabled={cash < 100}                                                                                                                                                                    
+                    className="bg-blue-600 hover:bg-blue-500 disabled:bg-gray-700 disabled:border-gray-600 disabled:text-gray-500 text-white p-4 border-4 border-blue-400 shadow-[4px_4px_0_0_rgba(0,0,0,1)] font-bold text-2xl cursor-pointer active:translate-x-1 active:translate-y-1 active:shadow-none transition-all uppercase"
+                  >                                                                                                                                                                                          
+                    Buy Shelf ($100)                                                                                                                                                                         
+                  </button>
+                  <button
+                    onClick={useStore(s => s.hireEmployee)}
+                    disabled={cash < 500}
+                    className="bg-purple-600 hover:bg-purple-500 disabled:bg-gray-700 disabled:border-gray-600 disabled:text-gray-500 text-white p-4 border-4 border-purple-400 shadow-[4px_4px_0_0_rgba(0,0,0,1)] font-bold text-2xl cursor-pointer active:translate-x-1 active:translate-y-1 active:shadow-none transition-all uppercase"
+                  >
+                    Hire Staff ($500)
+                  </button>
+                  <button
+                    onClick = {useStore(s => s.hireGuard)}
+                    disabled = {cash < 1500}
+                    className="bg-red-600 hover:bg-red-500 disabled:bg-gray-700 disabled:border-gray-600 disabled:text-gray-500 text-white p-4 border-4 border-red-400 shadow-[4px_4px_0_0_rgba(0,0,0,1)] font-bold text-2xl cursor-pointer active:translate-x-1 active:translate-y-1 active:shadow-none transition-all uppercase">
+                      Hire Guard ($1500)
+                    </button>
+              </div>
             ) : (
               <button
                 onClick={cancelBuildMode}                                                                                                                                                                

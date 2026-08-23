@@ -12,6 +12,7 @@ export const useStore = create((set) => ({
     isDayActive: true,
     dailyRevenue: 0,
     dailyExpenses: 0,
+    employeeCount: 0,
 
     checkout: { id: 'checkout', x: 800, y: 100, width: 128, height: 64, color: '#eab308'},
     products: [
@@ -44,6 +45,28 @@ export const useStore = create((set) => ({
     cancelBuildMode: () => set(state => {
         playPop();
         return { cash: state.cash + 100, buildMode: false}
+    }),
+
+    hireEmployee: () => set(state => {
+        if (state.cash >= 500) {
+            playPop();
+            return { cash: state.cash - 500, dailyExpenses: state.dailyExpenses + 500, employeeCount: state.employeeCount + 1};
+        }
+        playError(); return state;
+    }),
+
+    guardCount: 0,
+    hireGuard: () => set(state => {
+        if (state.cash >= 1500) {
+            playPop();
+            return { cash: state.cash - 1500, dailyExpenses: state.dailyExpenses + 1500, guardCount: state.guardCount + 1};
+        }
+        playError(); return state;
+    }),
+
+    catchThief: () => set(state => {
+        playPop();
+        return { cash: state.cash - 1500, dailyExpenses: state.dailyExpenses + 1500, guardCount: state.guardCount + 1};
     }),
 
     placeShelf: (x, y) => set(state => {

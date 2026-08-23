@@ -39,6 +39,8 @@ export default function GameCanvas() {
         let animationFrameId
 
         const customers = [];
+        const employees = [];
+        const guards = [];
         let nextCustomerTime = performance.now() + 3000;
 
         const handleKeyDown = (e) => { keys.current[e.key.toLowerCase()] = true}
@@ -186,9 +188,10 @@ export default function GameCanvas() {
                 const stockedShelves = state.shelves.filter(s => s.stock > 0);
                 if (stockedShelves.length > 0) {
                     const target = stockedShelves[Math.floor(Math.random() * stockedShelves.length)];
+                    const isThief = Math.random() < 0.15;
                     customers.push({
-                        x: 800, y: 1250, speed: 150, state: 'ENTERING',
-                        targetId: target.id, targetX: target.x + target.width/2, targetY: target.y + target.height/2
+                        x: 800, y: 1250, speed: isThief ? 220 : 150, state: 'ENTERING', isThief,
+                        targetId: targetId, targetX: target.x + target.width/2, targetY: target.y + target.height/2
                     });
                 }
                 nextCustomerTime = time + 2000 + Math.random() * 2000;
@@ -210,12 +213,17 @@ export default function GameCanvas() {
                     if (dist < 10) {
                         const targetShelf = state.shelves.find(s => s.id === c.targetId);
                         if (targetShelf && targetShelf.stock > 0) {
-                            c.state = 'TO_CHECKOUT';
-                            c.targetX = state.checkout.x + state.checkout.width/2;
-                            c.targetY = state.checkout.y + state.checkout.height/2;
                             useStore.getState().takeStock(c.targetId);
+                            if (c.isThief) {
+                                c.state = 'FLEEING';
+                                c.targetX = 800;
+                                c.targetY = 1300;
+                            } else {
+                                c.state = 'TO_CHECKOUT';
+                                c.targetX = state.checkout.x + state.checkout.width/2;
+                                c.targetY = state.checkout.y + state.checkout.height/2;
+                            }
                         } else {
-                            // Angry! Shelf is empty! Leave!
                             c.state = 'LEAVING';
                         }
                     } else {
@@ -229,7 +237,7 @@ export default function GameCanvas() {
                         moveX = (dx / dist) * c.speed * dt;
                         moveY = (dy / dist) * c.speed * dt;
                     }
-                } else if (c.state === 'LEAVING') {
+                } else if (c.state === 'LEAVING' || c.state === 'FLEEING') {
                     const dyOut = 1300 - c.y;
                     const dxOut = 800 - c.x;
                     const distOut = Math.hypot(dxOut, dyOut);
@@ -238,6 +246,9 @@ export default function GameCanvas() {
                         moveX = (dxOut / distOut) * c.speed * dt;
                         moveY = (dyOut / distOut) * c.speed * dt;
                     }
+                } else if (c.state === 'ARRESTED') {
+                    if (!c.arrestTimer) c.arrestTimer = time + 2000;
+                    if (time > c.arrestTimer) c.state = 'DESPAWN';
                 }
 
                 if (moveX !== 0 || moveY !== 0) {
@@ -271,7 +282,13 @@ export default function GameCanvas() {
                 }
 
                 const flipX = dx < 0;
-                const bob = (moveX !== 0 || moveY !== 0) ? Math.sin(time * 20) * 4 : 0
+                const bob = (moveX !== 0 || moveY !== 0) ? Math.sin(time * 20) * 4 : 0;
+                
+                if (c.isThief) {
+                    ctx.fillStyle = c.state === 'ARRESTED' ? ((time % 500 > 250) ? 'blue' : 'red') : 'rgba(239, 68, 68, 0.4)';
+                    ctx.fillRect(c.x - 16, c.y - 16, 32, 32);
+                }
+                
                 drawSprite(ctx, customerSprite, c.x - 16, c.y - 16 + bob, 32, 32, flipX);                                                                                                            
 
                 if (c.state === 'WAITING') {
@@ -279,6 +296,114 @@ export default function GameCanvas() {
                     ctx.fillRect(c.x - 4, c.y - 24, 8, 8);
                 }
             })
+
+            if (guards.length < state.guardCount) {
+                guards.push({ x: 800, y: 500, speed: 280, state: 'PATROL', tx: 800, ty: 500 });
+            }
+
+            guards.forEach(g => {
+                const activeThief = customers.find(c => c.isThief && c.state === 'FLEEING');
+                
+                if (activeThief) {
+                    g.state = 'CHASE';
+                    g.tx = activeThief.x;
+                    g.ty = activeThief.y;
+                    
+                    if (Math.hypot(g.tx - g.x, g.ty - g.y) < 25) {
+                        activeThief.state = 'ARRESTED';
+                        useStore.getState().catchThief();
+                    }
+                } else {
+                    g.state = 'PATROL';
+                    if (Math.hypot(g.tx - g.x, g.ty - g.y) < 10) {
+                        g.tx = Math.random() * 1200 + 200;
+                        g.ty = Math.random() * 800 + 200;
+                    }
+                }
+
+                const dx = g.tx - g.x;
+                const dy = g.ty - g.y;
+                const dist = Math.hypot(dx, dy);
+                if (dist > 10) {
+                    g.x += (dx / dist) * g.speed * dt;
+                    g.y += (dy / dist) * g.speed * dt;
+                }
+
+                const bob = dist > 10 ? Math.sin(time * 25) * 4 : 0;
+                ctx.fillStyle = g.state === 'CHASE' ? 'rgba(239, 68, 68, 0.5)' : 'rgba(59, 130, 246, 0.5)';
+                ctx.fillRect(g.x - 16, g.y - 16, 32, 32);
+                drawSprite(ctx, playerSprite, g.x - 16, g.y - 16 + bob, 32, 32, dx < 0);
+            });
+
+            if (employees.length < state.employeeCount) {
+                employees.push({ x: 800, y: 1250, speed: 200, targetId: null });
+            }
+
+            employees.forEach(e => {
+                if (!e.targetId) {
+                    const emptyShelf = state.shelves.find(s => s.productId && s.stock < 3);
+                    if (emptyShelf && state.cash >= state.products.find(p=>p.id===emptyShelf.productId).cost * 10) {
+                        e.targetId
+                    }
+                }
+
+                let moveX = 0; let moveY = 0;
+                if (e.targetId) {
+                    const targetShelf = state.shelves.find(s => s.id === e.targetId);
+
+                    if (!targetShelf || targetShelf.stock >= 3) {
+                        e.targetId = null;
+                    } else {
+                        const tx = targetShelf.x + targetShelf.width/2;
+                        const ty = targetShelf.y + targetShelf.height/2;
+                        const dist = Math.hypot(tx - e.x, ty - e.y);
+                        if (dist < 10) {
+                            useStore.getState().restockShelf(e.targetId);
+                            e.targetId = null;
+                        } else {
+                            moveX = ((tx - e.x) / dist) * e.speed * dt;
+                            moveY = ((ty - e.y) / dist) * e.speed * dt;
+                        }
+                    }
+                }
+
+                if (moveX !== 0 || moveY !== 0) {
+                    const eSize = 32;
+                    let newX = e.x + moveX;
+                    let newY = e.y + moveY;
+                    const collidables = [...state.shelves, state.checkout];
+
+                    let collidedX = false;
+                    for (let obj of collidables) {
+                        if (obj.id === e.targetId) continue;
+                        if (checkCollision({x: newX - 16, y: e.y - 16, width: eSize, height: eSize}, obj)) {
+                            collidedX = true; break;
+                        }
+                    }
+                    if (!collidedX) e.x = newX;
+
+                    let collidedY = false;
+                    for (let obj of collidables) {
+                        if (obj.id === e.targetId) continue;
+                        if (checkCollision({x: e.x - 16, y: newY - 16, width: eSize, height: eSize}, obj)) {
+                            collidedY = true; break;
+                        }
+                    }
+                    if (!collidedY) e.y = newY;
+                }
+
+                const bob = (moveX !== 0 || moveY !== 0) ? Math.sin(time * 20) * 4 : 0;
+                ctx.fillStyle = 'rgba(168, 85, 247, 0.4)';
+                ctx.fillRect(e.x - 16, e.y - 16, 32, 32);
+                drawSprite(ctx, playerSprite, e.x - 16, e.y - 16 + bob, 32, 32, moveX < 0);
+
+                if (e.targetId) {
+                    ctx.fillStyle = '#78350f';
+                    ctx.fillRect(e.x + (moveX < 0 ? -12 : 4), e.y - 8 + bob, 12, 12);
+                    ctx.fillStyle = '#d97706';
+                    ctx.fillRect(e.x + (moveX < 0 ? -10 : 6), e.y - 6 + bob, 8, 8);
+                }
+            });
 
             if (dx < 0) pFacingLeft.current = true;
             else if (dx > 0) pFacingLeft.current = false;
