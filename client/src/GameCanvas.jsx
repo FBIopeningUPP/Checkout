@@ -33,9 +33,10 @@ export default function GameCanvas() {
     const pFacingLeft = useRef(false);
 
     useEffect(() => {
-        const canvas = canvasRef.current
-        const ctx = canvas.getContext('2d')
-        let lastTime = performance.now()
+        const canvas = canvasRef.current;
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        let lastTime = performance.now();
         let animationFrameId
 
         const customers = [];
