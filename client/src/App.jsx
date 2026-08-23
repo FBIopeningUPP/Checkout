@@ -174,13 +174,69 @@ function DaySummary() {
     </div>
   )
 }
+function GameScreens() {
+  const gameState = useStore(s => s.gameState);
+  const startGame = useStore(s => s.startGame);
+
+  if (gameState === 'MENU') {
+    return (
+      <div className="absolute inset-0 bg-black/80 flex items-center justify-center z-50 uppercase">
+        <div className="bg-gray-900 p-12 border-4 border-gray-400 shadow-[8px_8px_0_0_rgba(0,0,0,1)] text-white text-center">
+          <h1 className="text-6xl font-bold mb-4 text-blue-400">Checkout</h1>
+          <p className="text-2xl mb-8 text-gray-300">Run the store. Catch thieves. Make $5000.</p>
+          <button onClick={startGame} className="bg-green-600 hover:bg-green-500 w-full py-4 border-2 border-green-400 shadow-[4px_4px_0_0_rgba(0,0,0,1)] font-bold text-4xl cursor-pointer active:translate-x-1 active:translate-y-1 active:shadow-none transition-all">
+            Start Demo
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (gameState === 'GAMEOVER') {
+    return (
+      <div className="absolute inset-0 bg-black/90 flex items-center justify-center z-50 uppercase">
+        <div className="bg-gray-900 p-12 border-4 border-red-800 shadow-[8px_8px_0_0_rgba(0,0,0,1)] text-white text-center">
+          <h1 className="text-6xl font-bold mb-4 text-red-500">Bankrupt!</h1>
+          <p className="text-2xl mb-8 text-gray-400">You ran out of money.</p>
+          <button onClick={startGame} className="bg-red-600 hover:bg-red-500 w-full py-4 border-2 border-red-400 shadow-[4px_4px_0_0_rgba(0,0,0,1)] font-bold text-4xl cursor-pointer active:translate-x-1 active:translate-y-1 active:shadow-none transition-all">
+            Try Again
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (gameState === 'VICTORY') {
+    return (
+      <div className="absolute inset-0 bg-black/90 flex items-center justify-center z-50 uppercase">
+        <div className="bg-gray-900 p-12 border-4 border-yellow-400 shadow-[8px_8px_0_0_rgba(0,0,0,1)] text-white text-center">
+          <h1 className="text-6xl font-bold mb-4 text-yellow-400">Demo Complete!</h1>
+          <p className="text-2xl mb-8 text-gray-300">You built a successful $5000 business!</p>
+          <button onClick={startGame} className="bg-blue-600 hover:bg-blue-500 w-full py-4 border-2 border-blue-400 shadow-[4px_4px_0_0_rgba(0,0,0,1)] font-bold text-4xl cursor-pointer active:translate-x-1 active:translate-y-1 active:shadow-none transition-all">
+            Play Again
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return null;
+}
+
 function App() {
+  const gameState = useStore(s => s.gameState);
+  
   return (
     <div className="w-screen h-screen overflow-hidden relative">
       <GameCanvas />
-      <HUD />
-      <ShelfMenu />
-      <DaySummary />
+      {gameState === 'PLAYING' && (
+        <>
+          <HUD />
+          <ShelfMenu />
+          <DaySummary />
+        </>
+      )}
+      <GameScreens />
     </div>
   )
 }
