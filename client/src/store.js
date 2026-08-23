@@ -7,9 +7,10 @@ export const useStore = create((set) => ({
 
     cash: 500,
     buildMode: false,
+    gameState: 'MENU',
     day: 1,
     dayTimeLeft: 60,
-    isDayActive: true,
+    isDayActive: false,
     dailyRevenue: 0,
     dailyExpenses: 0,
     employeeCount: 0,
@@ -66,7 +67,19 @@ export const useStore = create((set) => ({
 
     catchThief: () => set(state => {
         playPop();
-        return { cash: state.cash - 1500, dailyExpenses: state.dailyExpenses + 1500, guardCount: state.guardCount + 1};
+        return { cash: state.cash + 50, dailyRevenue: state.dailyRevenue + 50};
+    }),
+
+    startGame: () => set({
+        gameState: 'PLAYING',
+        isDayActive: true,
+        cash: 500,
+        day: 1,
+        dayTimeLeft: 60,
+        dailyRevenue: 0,
+        dailyExpenses: 0,
+        employeeCount: 0,
+        guardCount: 0
     }),
 
     placeShelf: (x, y) => set(state => {
@@ -139,6 +152,8 @@ export const useStore = create((set) => ({
 
     endDay: () => set(state => {
         playBell();
+        if (state.cash < 0) return { isDayActive: false, gameState: 'GAMEOVER' };
+        if (state.cash >= 5000) return { isDayActive: false, gameState: 'VICTORY' };
         return { isDayActive: false };
     }),
     startNextDay: () => set(state=> ({
