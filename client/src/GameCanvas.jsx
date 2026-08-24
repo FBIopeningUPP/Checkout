@@ -297,7 +297,6 @@ export default function GameCanvas() {
                 }
             })
 
-            // Remove despawned customers
             for (let i = customers.length - 1; i >= 0; i--) {
                 if (customers[i].state === 'DESPAWN') customers.splice(i, 1);
             }

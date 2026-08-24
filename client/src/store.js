@@ -14,6 +14,7 @@ export const useStore = create((set) => ({
     dailyRevenue: 0,
     dailyExpenses: 0,
     employeeCount: 0,
+    activeShelfId: null,
 
     checkout: { id: 'checkout', x: 800, y: 100, width: 128, height: 64, color: '#eab308'},
     products: [
